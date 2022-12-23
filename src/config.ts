@@ -49,6 +49,7 @@ export const config = rt
       remove: rt.Boolean,
       refresh: rt.Boolean,
       secretsProvider: rt.String,
+      commentOnPrId: rt.String,
       commentOnPrNumber: rt.Number,
     }),
   );
@@ -64,6 +65,7 @@ export async function makeConfig(): Promise<Config> {
     cloudUrl: getInput('cloud-url'),
     githubToken: getInput('github-token'),
     commentOnPr: parseBoolean(getInput('comment-on-pr')),
+    commentOnPrId: getInput('comment-on-pr-id'),
     commentOnPrNumber: parseNumber(getInput('comment-on-pr-number')),
     upsert: parseBoolean(getInput('upsert')),
     remove: parseBoolean(getInput('remove')),
@@ -82,7 +84,7 @@ export async function makeConfig(): Promise<Config> {
       policyPackConfigs: parseArray(getInput('policyPackConfigs')),
       editCommentOnPr: parseBoolean(getInput('edit-pr-comment')),
       userAgent: 'pulumi/actions@v3',
-      pulumiVersion: getInput('pulumi-version') || "^3",
+      pulumiVersion: getInput('pulumi-version') || '^3',
       color: getInput('color'),
     },
   });
