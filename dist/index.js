@@ -81905,8 +81905,6 @@ var dist = __nccwpck_require__(4083);
 var github = __nccwpck_require__(5438);
 // EXTERNAL MODULE: ./node_modules/runtypes/lib/index.js
 var lib = __nccwpck_require__(5568);
-// EXTERNAL MODULE: ./node_modules/dedent/dist/dedent.js
-var dedent = __nccwpck_require__(5281);
 ;// CONCATENATED MODULE: ./node_modules/js-yaml/dist/js-yaml.mjs
 
 /*! js-yaml 4.1.0 https://github.com/nodeca/js-yaml @license MIT */
@@ -85762,7 +85760,6 @@ var jsYaml = {
 
 ;// CONCATENATED MODULE: ./src/libs/utils.ts
 
-
 function parseArray(input) {
     return parseUndefined(input)
         ? input.split(/\r?\n/).reduce((acc, line) => acc
@@ -85785,8 +85782,7 @@ function parseYAML(input) {
     if (!parsed) {
         return undefined;
     }
-    const dedented = dedent(input);
-    return load(dedented);
+    return load(input);
 }
 
 ;// CONCATENATED MODULE: ./src/config.ts
@@ -85896,6 +85892,8 @@ const environmentVariables = envalid_dist.cleanEnv(process.env, {
     }),
 });
 
+// EXTERNAL MODULE: ./node_modules/dedent/dist/dedent.js
+var dedent = __nccwpck_require__(5281);
 ;// CONCATENATED MODULE: ./src/libs/pr.ts
 
 
