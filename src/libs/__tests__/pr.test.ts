@@ -2,7 +2,12 @@ import * as gh from '@actions/github';
 import { Config } from '../../config';
 import { handlePullRequestMessage } from '../pr';
 
-const comments = [{ id: 2, body: '#### :tropical_drink: `preview` on myFirstProject/staging. <summary>Pulumi report</summary>' }];
+const comments = [
+  {
+    id: 2,
+    body: '#### :tropical_drink: `preview` on myFirstProject/staging. <summary>Pulumi report</summary><!-- pulumi-comment-id: some-comment-staging-id -->',
+  },
+];
 const resp = { data: comments };
 const projectName = 'myFirstProject';
 const defaultOptions = {
@@ -45,8 +50,8 @@ describe('pr.ts', () => {
 
     await handlePullRequestMessage(defaultOptions, projectName, 'test');
     expect(createComment).toHaveBeenCalledWith({
-      body: '#### :tropical_drink: `preview` on myFirstProject/staging\n\n<details>\n<summary>Pulumi report</summary>\n\n```\ntest\n```\n\n</details>',
-      issue_number: 123
+      body: '#### :tropical_drink: `preview` on myFirstProject/staging\n\n<details>\n<summary>Pulumi report</summary>\n\n```\ntest\n```\n\n</details>\n<!-- pulumi-comment-id: default -->',
+      issue_number: 123,
     });
   });
 
@@ -92,11 +97,34 @@ describe('pr.ts', () => {
       options: { editCommentOnPr: true },
     } as Config;
 
+    await handlePullRequestMessage(options, projectName, 'test');
+    expect(updateComment).toHaveBeenCalledWith({
+      comment_id: 2,
+      body: '#### :tropical_drink: `preview` on myFirstProject/staging\n\n<details>\n<summary>Pulumi report</summary>\n\n```\ntest\n```\n\n</details>\n<!-- pulumi-comment-id: default -->',
+    });
+  });
+
+  it('should edit the comment if it finds a previous created one by the comment id', async () => {
+    // @ts-ignore
+    gh.context = {
+      payload: {
+        pull_request: {
+          number: 123,
+        },
+      },
+    };
+
+    const options = {
+      command: 'preview',
+      stackName: 'staging',
+      commentOnPrId: 'some-comment-staging-id',
+      options: { editCommentOnPr: true },
+    } as Config;
 
     await handlePullRequestMessage(options, projectName, 'test');
     expect(updateComment).toHaveBeenCalledWith({
       comment_id: 2,
-      body: '#### :tropical_drink: `preview` on myFirstProject/staging\n\n<details>\n<summary>Pulumi report</summary>\n\n```\ntest\n```\n\n</details>'
+      body: '#### :tropical_drink: `preview` on myFirstProject/staging\n\n<details>\n<summary>Pulumi report</summary>\n\n```\ntest\n```\n\n</details>\n<!-- pulumi-comment-id: some-comment-staging-id -->',
     });
   });
 });
