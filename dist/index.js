@@ -81964,6 +81964,7 @@ const config = lib.Record({
     remove: lib.Boolean,
     refresh: lib.Boolean,
     secretsProvider: lib.String,
+    commentOnPrId: lib.String,
     commentOnPrNumber: lib.Number,
 }));
 function makeConfig() {
@@ -81977,6 +81978,7 @@ function makeConfig() {
             cloudUrl: (0,core.getInput)('cloud-url'),
             githubToken: (0,core.getInput)('github-token'),
             commentOnPr: parseBoolean((0,core.getInput)('comment-on-pr')),
+            commentOnPrId: (0,core.getInput)('comment-on-pr-id'),
             commentOnPrNumber: parseNumber((0,core.getInput)('comment-on-pr-number')),
             upsert: parseBoolean((0,core.getInput)('upsert')),
             remove: parseBoolean((0,core.getInput)('remove')),
@@ -81995,7 +81997,7 @@ function makeConfig() {
                 policyPackConfigs: parseArray((0,core.getInput)('policyPackConfigs')),
                 editCommentOnPr: parseBoolean((0,core.getInput)('edit-pr-comment')),
                 userAgent: 'pulumi/actions@v3',
-                pulumiVersion: (0,core.getInput)('pulumi-version') || "^3",
+                pulumiVersion: (0,core.getInput)('pulumi-version') || '^3',
                 color: (0,core.getInput)('color'),
             },
         });
@@ -82022,11 +82024,12 @@ var dedent = __nccwpck_require__(5281);
 
 
 function handlePullRequestMessage(config, projectName, output) {
-    var _a;
+    var _a, _b;
     return modules_awaiter(this, void 0, void 0, function* () {
         const { githubToken, command, stackName, options: { editCommentOnPr }, } = config;
         const heading = `#### :tropical_drink: \`${command}\` on ${projectName}/${stackName}`;
         const summary = '<summary>Pulumi report</summary>';
+        const commentOnPrIdTag = `<!-- pulumi-comment-id: ${(_a = config.commentOnPrId) !== null && _a !== void 0 ? _a : 'default'} -->`;
         const rawBody = output.substring(0, 64000);
         // a line break between heading and rawBody is needed
         // otherwise the backticks won't work as intended
@@ -82043,16 +82046,24 @@ function handlePullRequestMessage(config, projectName, output) {
             ? '**Warn**: The output was too long and trimmed.'
             : ''}
     </details>
+    ${commentOnPrIdTag}
   `;
         const { payload, repo } = github.context;
         // Assumes PR numbers are always positive.
-        const nr = config.commentOnPrNumber || ((_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.number);
+        const nr = config.commentOnPrNumber || ((_b = payload.pull_request) === null || _b === void 0 ? void 0 : _b.number);
         (0,invariant/* default */.ZP)(nr, 'Missing pull request event data.');
         const octokit = (0,github.getOctokit)(githubToken);
         try {
             if (editCommentOnPr) {
                 const { data: comments } = yield octokit.rest.issues.listComments(Object.assign(Object.assign({}, repo), { issue_number: nr }));
-                const comment = comments.find((comment) => comment.body.startsWith(heading) && comment.body.includes(summary));
+                const comment = comments.find((comment) => {
+                    if (config.commentOnPrId) {
+                        return comment.body.includes(commentOnPrIdTag);
+                    }
+                    else {
+                        return (comment.body.startsWith(heading) && comment.body.includes(summary));
+                    }
+                });
                 // If comment exists, update it.
                 if (comment) {
                     yield octokit.rest.issues.updateComment(Object.assign(Object.assign({}, repo), { comment_id: comment.id, body }));
@@ -82060,7 +82071,7 @@ function handlePullRequestMessage(config, projectName, output) {
                 }
             }
         }
-        catch (_b) {
+        catch (_c) {
             core.warning('Not able to edit comment, defaulting to creating a new comment.');
         }
         yield octokit.rest.issues.createComment(Object.assign(Object.assign({}, repo), { issue_number: nr, body }));
