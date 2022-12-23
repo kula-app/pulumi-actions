@@ -39,6 +39,7 @@ describe('config.ts', () => {
         "configMap": undefined,
         "githubToken": "n/a",
         "isPullRequest": false,
+        "manualPlugins": Array [],
         "options": Object {
           "color": undefined,
           "diff": undefined,
@@ -105,6 +106,7 @@ describe('config.ts', () => {
         "configMap": undefined,
         "githubToken": "n/a",
         "isPullRequest": false,
+        "manualPlugins": Array [],
         "options": Object {
           "color": undefined,
           "diff": undefined,
@@ -163,6 +165,7 @@ describe('config.ts', () => {
         "configMap": undefined,
         "githubToken": "n/a",
         "isPullRequest": true,
+        "manualPlugins": Array [],
         "options": Object {
           "color": undefined,
           "diff": undefined,

@@ -4,6 +4,8 @@
 
 - feat: Add multi-comment support on the same PR using comment identifiers
   [#809](https://github.com/pulumi/actions/pull/809)
+- feat: added support to install manually install plugins
+  [#810](https://github.com/pulumi/actions/pull/810)
 
 --
 
